@@ -1,26 +1,36 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import SeasonDisplay from './SeasonDisplay';
+import Spinner from './Spinner';
 
 class App extends React.Component {
+    state = { lat: null, errorMessage: '' };
 
-    constructor(props) {
-        super(props);
-
-        // Only time state is directly assigned is within the constructor, no where else
-        this.state = { lat: null };
-
+    componentDidMount() {
         window.navigator.geolocation.getCurrentPosition(
-            position => {
-                // Always set state with the setState() function call
-                // When state is updated render() is called automatically
-                this.setState({ lat: position.coords.latitude });
-            },
-            err => console.log(err)
+            position => this.setState({ lat: position.coords.latitude }),
+            err => this.setState({ errorMessage: err.message })
         );
     }
 
+    renderContent() {
+        if (this.state.errorMessage && !this.state.lat) {
+            return <div>Error: {this.state.errorMessage}</div>
+        }
+
+        if (!this.state.errorMessage && this.state.lat) {
+            return <SeasonDisplay lat={this.state.lat} />
+        }
+
+        return <Spinner message="Awaiting location request" />;
+    }
+
     render() {
-        return <div>Latitude: {this.state.lat}</div>
+        return (
+            <div className="border-red">
+                {this.renderContent()}
+            </div>
+        );
     }
 }
 
